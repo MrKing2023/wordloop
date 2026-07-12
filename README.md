@@ -1,6 +1,6 @@
-# WordLoop v3.1 修复版：AI 辅助语境背单词
+# WordLoop v3.4：AI 辅助语境背单词
 
-一个纯静态、可部署到 GitHub + Cloudflare Pages 的本地英语学习网站。
+一个纯静态、可部署到 GitHub + Cloudflare Workers Static Assets 的本地英语学习网站。
 
 ## v3 新功能
 
@@ -22,7 +22,7 @@
 
 ### 直接打开
 
-双击 `index.html`。部分手机浏览器对本地 HTML 的存储和发音支持有限。
+双击 `public/index.html`。部分手机浏览器对本地 HTML 的存储和发音支持有限。
 
 ### 推荐：本地服务器
 
@@ -35,7 +35,7 @@ start_wordloop.bat
 或在当前目录运行：
 
 ```bash
-python -m http.server 8000
+python -m http.server 8000 --directory public
 ```
 
 浏览器访问：
@@ -56,27 +56,27 @@ http://localhost:8000
 
 ## 部署
 
-项目不需要构建命令，根目录就是静态网站目录。上传到 GitHub 后，将仓库连接到 Cloudflare Pages：
+项目不需要前端构建。Cloudflare Workers Static Assets 只会发布 `public/` 中的网站文件：
 
-- Framework preset：None
-- Build command：留空
-- Build output directory：`/` 或留空
+- Build command：`exit 0`
+- Deploy command：`npx wrangler deploy`
+- Root directory：`/`
 
 更详细步骤见 `DEPLOY_GITHUB_CLOUDFLARE.md`。
 
 ## 主要文件
 
-- `index.html`：入口页面
-- `styles.css`：基础样式和 v3 响应式设计
-- `app.js`：基础功能
-- `enhancements.js`：200 词库、逐级提示和详细解析
-- `plan_v3.js`：按天学习计划、日期进度与 v3 页面
-- `word_bank_200.json`：独立的 200 词库数据
-- `WordLoop_standalone_v3.html`：单文件版本
+- `public/index.html`：入口页面
+- `public/styles.css`：基础样式和 v3 响应式设计
+- `public/app.js`：基础功能
+- `public/enhancements.js`：200 词库、逐级提示和详细解析
+- `public/plan_v3.js`：按天学习计划、日期进度与 v3 页面
+- `public/word_bank_200.json`：独立的 200 词库数据
+- `WordLoop_standalone_v3.4.html`：不参与线上部署的单文件版本
 
 ## 部署后更新
 
-修改代码并推送到 GitHub 后，Cloudflare Pages 会自动重新部署。网页更新一般不会删除同一域名下的本地学习进度。
+修改代码并推送到 GitHub 后，Cloudflare 会自动重新部署。网页更新一般不会删除同一域名下的本地学习进度。
 
 
 ## v3.1 关键修复

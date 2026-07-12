@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 title WordLoop v3 Local Server
-cd /d "%~dp0"
+cd /d "%~dp0public"
 echo WordLoop v3 正在启动...
 echo 浏览器地址：http://localhost:8000
 echo 关闭本窗口即可停止服务。
