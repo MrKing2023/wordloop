@@ -43,3 +43,29 @@ python tools/lexicon_builder/build_cet6_v4_1.py \
 - `make_ai_batches.py`：导出后续 AI 内容生成任务；
 - `validate_generated_cards.py`：生成学习卡的字段和答案检查；
 - `docs/AI_CONTENT_PIPELINE.md`：大规模内容生成、复核与抽样方案。
+
+## WordLoop v4.2 考研英语
+
+从当前 CET-6 基础词库中筛选同时带 `ky` 标签的词条，并生成考研核心词库与 100 张精选卡：
+
+```bash
+python build_kaoyan_v4_2.py \
+  --cet6-lexicon ../../public/data/cet6/cet6_lexicon.json \
+  --lexicon-output ../../public/data/kaoyan/kaoyan_lexicon.json \
+  --cards-output ../../public/data/kaoyan/kaoyan_cards_100.json
+```
+
+发布前运行：
+
+```bash
+python validate_release_v4_2.py
+```
+
+要提取完整 ECDICT `ky` 标签集合，应先取得官方 `ecdict.csv`，然后运行：
+
+```bash
+python extract_exam_words.py \
+  --input /path/to/ecdict.csv \
+  --exam kaoyan \
+  --output /path/to/kaoyan_full.json
+```

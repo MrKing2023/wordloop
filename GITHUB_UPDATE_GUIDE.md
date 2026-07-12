@@ -1,45 +1,33 @@
-# WordLoop v4.1.1 GitHub 与自动部署
+# WordLoop v4.2.1 手动推送 GitHub
 
-项目维护使用本地 Git 仓库并推送到 `MrKing2023/wordloop` 的 `main` 分支。Cloudflare、EdgeOne 和 CloudBase 如已连接该分支，会在推送后自动构建。
+本版本已合并到本地 Git 仓库并完成验证。由项目维护者手动推送到 `main` 后，已连接的静态托管平台会自动构建。
 
-## 更新方式
+## 推送命令
 
-将完整项目与 v4.1.1 补丁合并到仓库后，检查并提交：
-
-```bash
-git add .
-git commit -m "Add WordLoop v4.1.1 CET-6 library"
+```powershell
+cd F:\vibe_coding\idea_inbox\wordloop
 git push origin main
 ```
 
-## 必须确认的目录
-
-上传后 GitHub 中应存在：
+## 必须确认的文件
 
 ```text
-public/data/cet6/cet6_lexicon.json
-public/data/cet6/cet6_cards_100.json
+public/index.html
 public/lexicon_v4.js
-public/lexicon_v4.css
+start_wordloop.bat
 public/data/library_manifest.json
+public/data/kaoyan/kaoyan_lexicon.json
+public/data/kaoyan/kaoyan_cards_100.json
+tools/lexicon_builder/build_kaoyan_v4_2.py
+tools/lexicon_builder/validate_release_v4_2.py
 ```
 
-标准文件必须位于 `public/data/cet6/`。GitHub 版本不需要额外复制根目录备用 JSON；`lexicon_v4.js` 已保留备用路径兼容逻辑。
+GitHub/Cloudflare 使用标准 `data/kaoyan/` 路径。CloudBase 专用包同时附带根目录备用 JSON。
 
-## 部署
+本地预览请双击 `start_wordloop.bat`，访问 `http://127.0.0.1:8042/`。不要直接双击 `public/index.html`。
 
-- Cloudflare：连接 GitHub 后通常会自动重新部署；
-- EdgeOne Pages：输出目录设置为 `public`；
-- CloudBase Git 平台部署：目标目录 `./`，安装和构建命令留空，构建产物目录 `./public`，部署路径 `/`；
-- CloudBase 手动部署：使用单独的 CloudBase 压缩包，包内网站文件应直接位于根目录；
-- 部署完成后打开“词库中心”，确认 CET-6 显示 `5407 基础词条 · 100 学习卡`。
+部署完成后进入“词库中心”，考研英语应显示：
 
-## 缓存
-
-网站更新后仍显示旧版时：
-
-1. 强制刷新页面；
-2. 清除该网站缓存，但不要清除网站数据；
-3. 检查部署平台是否发布了最新 Git commit。
-
-现有 `localStorage` 学习记录会保留。第一次启用 CET-6 时，100 张卡片才会写入当前浏览器的学习状态。
+```text
+4112 基础词条 · 100 学习卡
+```

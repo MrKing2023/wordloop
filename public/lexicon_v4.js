@@ -1,112 +1,141 @@
-/* WordLoop v4.1: multi-library switching, CET-6 base lexicon and curated 100 cards */
+/* WordLoop v4.2: multi-library switching, CET-6 and Kaoyan lexicons */
 (function(){
   "use strict";
 
   icons.libraries = "◫";
 
-  const VERSION = "4.1.1";
-  const LIBRARY_NAMES = {"core-200":"核心 200", cet6:"CET-6 精选 100"};
+  const VERSION = "4.2.1";
+  const LIBRARY_NAMES = {
+    "core-200":"核心 200",
+    cet6:"CET-6 精选 100",
+    kaoyan:"考研英语精选 100"
+  };
+  const LIBRARY_CONFIGS = {
+    cet6:{
+      id:"cet6",shortName:"CET-6",planName:"CET-6 精选 100",baseCount:5407,cardCount:100,
+      cardsPath:"data/cet6/cet6_cards_100.json",lexiconPath:"data/cet6/cet6_lexicon.json",
+      cardsLabel:"CET-6 学习卡",lexiconLabel:"CET-6 基础词库",color:"#3b82f6",
+      browserTitle:"CET-6 基础词库浏览器",
+      browserDescription:"ECDICT 中带 cet6 标签的 5407 个词条，包含音标、中英文释义、考试标签、词频和词形信息。",
+      releaseTitle:"CET-6 当前版本",
+      releaseBaseText:"ECDICT cet6 标签基础词条",
+      scopeText:"5407 是 ECDICT 数据中带 cet6 标签的提取结果，不宣称为唯一或官方六级大纲词数。"
+    },
+    kaoyan:{
+      id:"kaoyan",shortName:"考研英语",planName:"考研英语精选 100",baseCount:4112,cardCount:100,
+      cardsPath:"data/kaoyan/kaoyan_cards_100.json",lexiconPath:"data/kaoyan/kaoyan_lexicon.json",
+      cardsLabel:"考研英语学习卡",lexiconLabel:"考研英语核心词库",color:"#d97706",
+      browserTitle:"考研英语核心词库浏览器",
+      browserDescription:"当前收录 ECDICT 数据中同时带 ky 与 cet6 标签的 4112 个考研核心词条，突出高频阅读词与学术表达。",
+      releaseTitle:"考研英语 v4.2 首发",
+      releaseBaseText:"ECDICT ky∩cet6 核心词条",
+      scopeText:"4112 是当前本地 ECDICT 数据中同时带 ky 与 cet6 标签的核心集合，不宣称为教育部官方或唯一完整考研词表。"
+    }
+  };
   const FALLBACK_LIBRARY_MANIFEST = {
-    schemaVersion: 2,
-    productVersion: VERSION,
-    libraries: [
+    schemaVersion:3,
+    productVersion:VERSION,
+    libraries:[
       {id:"core-200",name:"WordLoop 核心 200 词",shortName:"核心 200",status:"ready",baseEntryCount:200,cardCount:200,level:"基础—进阶",description:"原有 200 张学习卡，支持填空、整句翻译和详细解析。",source:"WordLoop 自建学习卡",licenseNote:"项目自建内容。",features:["句子填空","整句翻译","逐级提示","详细解析"],accent:"violet"},
-      {id:"cet6",name:"CET-6 基础词库与精选学习卡",shortName:"CET-6",status:"ready",baseEntryCount:5407,cardCount:100,level:"大学英语六级",description:"已完成 ECDICT cet6 标签全量基础词库，并发布首批 100 张增强学习卡。",source:"ECDICT 基础字段 + WordLoop 原创学习内容",licenseNote:"ECDICT 使用 MIT License；本项目不宣称该集合是唯一或官方考试词表。",features:["5407 基础词条","100 张增强卡","音标与释义","搭配与例句"],accent:"blue"},
-      {id:"kaoyan",name:"考研英语词库",shortName:"考研英语",status:"planned",baseEntryCount:null,cardCount:null,level:"考研英语",description:"突出熟词僻义、阅读搭配和长难句语境。",source:"考试标签词表 + 词典数据 + 原创学习内容",licenseNote:"来源与生成版本分别记录。",features:["熟词僻义","长难句语境","阅读搭配","整句输出"],accent:"amber"},
+      {id:"cet6",name:"CET-6 基础词库与精选学习卡",shortName:"CET-6",status:"ready",baseEntryCount:5407,cardCount:100,level:"大学英语六级",description:"已完成 ECDICT cet6 标签基础词库，并发布首批 100 张增强学习卡。",source:"ECDICT 基础字段 + WordLoop 原创学习内容",licenseNote:"ECDICT 使用 MIT License；本项目不宣称该集合是唯一或官方考试词表。",features:["5407 基础词条","100 张增强卡","音标与释义","搭配与例句"],accent:"blue"},
+      {id:"kaoyan",name:"考研英语核心词库与精选学习卡",shortName:"考研英语",status:"ready",baseEntryCount:4112,cardCount:100,level:"考研英语",description:"首批内容突出熟词僻义、学术论证、逻辑关系、阅读搭配和考研语境。",source:"ECDICT ky∩cet6 基础字段 + WordLoop 原创学习内容",licenseNote:"ECDICT 使用 MIT License；4112 为当前核心交集，不宣称官方或唯一完整词表。",features:["4112 核心词条","100 张增强卡","熟词僻义","学术阅读语境"],accent:"amber"},
       {id:"ielts",name:"IELTS 主题词汇",shortName:"IELTS",status:"planned",baseEntryCount:null,cardCount:null,level:"IELTS",description:"按写作、听力、口语主题和同义改写拆分。",source:"开放词典 + 主题语料 + 原创学习内容",licenseNote:"不宣称官方完整词表。",features:["主题分类","常见搭配","同义改写","写作表达"],accent:"green"}
     ]
   };
 
-  let libraryManifestCache = null;
-  let libraryManifestPromise = null;
-  let cet6CardsPromise = null;
-  let cet6LexiconPromise = null;
-  let lexiconView = {query:"", page:1, pageSize:50};
+  let libraryManifestCache=null;
+  let libraryManifestPromise=null;
+  const cardsPromises={};
+  const lexiconPromises={};
+  let lexiconView={libraryId:"cet6",query:"",page:1,pageSize:50};
 
-  function clone(value){ return JSON.parse(JSON.stringify(value)); }
-  function cardLibraryId(card){ return card?.libraryId || (String(card?.id||"").startsWith("cet6-") ? "cet6" : "core-200"); }
-  function activeLibraryId(){ return state.libraryCenter?.activeLibraryId || "core-200"; }
-  function cardsInLibrary(id=activeLibraryId()){ return state.cards.filter(card => !card.isSuspended && cardLibraryId(card) === id); }
-  function libraryPlanName(id){ return id === "cet6" ? "CET-6 精选 100" : "核心英语 200 词"; }
+  function clone(value){return JSON.parse(JSON.stringify(value));}
+  function inferredLibraryId(card){
+    const id=String(card?.id||"");
+    if(id.startsWith("cet6-"))return "cet6";
+    if(id.startsWith("kaoyan-"))return "kaoyan";
+    return "core-200";
+  }
+  function cardLibraryId(card){return card?.libraryId||inferredLibraryId(card);}
+  function activeLibraryId(){return state.libraryCenter?.activeLibraryId||"core-200";}
+  function cardsInLibrary(id=activeLibraryId()){return state.cards.filter(card=>!card.isSuspended&&cardLibraryId(card)===id);}
+  function libraryPlanName(id){return LIBRARY_CONFIGS[id]?.planName||"核心英语 200 词";}
 
   function ensureLibraryState(){
-    state.ui = state.ui || {};
-    state.cards = state.cards || [];
-    state.decks = state.decks || [];
-    state.reviewStates = state.reviewStates || [];
-    state.cards.forEach(card => { if(!card.libraryId) card.libraryId = cardLibraryId(card); });
-    state.decks.forEach(deck => {
+    state.ui=state.ui||{};
+    state.cards=state.cards||[];
+    state.decks=state.decks||[];
+    state.reviewStates=state.reviewStates||[];
+    state.cards.forEach(card=>{if(!card.libraryId)card.libraryId=inferredLibraryId(card);});
+    state.decks.forEach(deck=>{
       if(!deck.libraryId){
         const deckCards=state.cards.filter(card=>card.deckId===deck.id);
-        deck.libraryId=deckCards.some(card=>cardLibraryId(card)==="cet6")?"cet6":"core-200";
+        deck.libraryId=deckCards.find(card=>cardLibraryId(card)!=="core-200")?.libraryId||"core-200";
       }
     });
-    state.libraryCenter = state.libraryCenter || {};
-    state.libraryCenter.version = 2;
-    state.libraryCenter.activeLibraryId = state.libraryCenter.activeLibraryId || "core-200";
-    state.libraryCenter.lastViewedLibraryId = state.libraryCenter.lastViewedLibraryId || state.libraryCenter.activeLibraryId;
-    state.libraryCenter.createdAt = state.libraryCenter.createdAt || nowISO();
-    state.libraryCenter.updatedAt = nowISO();
-    state.libraryPlans = state.libraryPlans || {};
-    if(state.studyPlan && !state.libraryPlans[state.libraryCenter.activeLibraryId]){
-      state.libraryPlans[state.libraryCenter.activeLibraryId] = state.studyPlan;
-    }
-    state.version = Math.max(4.1, Number(state.version || 0));
+    state.libraryCenter=state.libraryCenter||{};
+    state.libraryCenter.version=3;
+    const validIds=["core-200","cet6","kaoyan"];
+    if(!validIds.includes(state.libraryCenter.activeLibraryId))state.libraryCenter.activeLibraryId="core-200";
+    state.libraryCenter.lastViewedLibraryId=state.libraryCenter.lastViewedLibraryId||state.libraryCenter.activeLibraryId;
+    state.libraryCenter.createdAt=state.libraryCenter.createdAt||nowISO();
+    state.libraryCenter.updatedAt=nowISO();
+    state.libraryPlans=state.libraryPlans||{};
+    if(state.studyPlan&&!state.libraryPlans[state.libraryCenter.activeLibraryId])state.libraryPlans[state.libraryCenter.activeLibraryId]=state.studyPlan;
+    state.version=Math.max(4.2,Number(state.version||0));
     save();
   }
   ensureLibraryState();
 
-  async function loadJSON(path, label){
+  async function loadJSON(path,label){
+    if(location.protocol==="file:"){
+      throw new Error(`${label}无法在 file:// 模式读取。请双击仓库根目录的 start_wordloop.bat，或运行 python -m http.server 8042 --directory public 后访问 http://127.0.0.1:8042/。`);
+    }
     const flatName=String(path||"").split("/").pop();
     const candidates=[path];
-    if(flatName && flatName!==path)candidates.push(flatName);
+    if(flatName&&flatName!==path)candidates.push(flatName);
     let lastError=null;
+    const attempted=[];
     for(const candidate of candidates){
       try{
         const url=new URL(candidate,document.baseURI).href;
+        attempted.push(url);
         const response=await fetch(url,{cache:"no-store"});
-        if(!response.ok){
-          lastError=new Error(`${label}加载失败：${response.status}（${candidate}）`);
-          continue;
-        }
+        if(!response.ok){lastError=new Error(`${label}加载失败：${response.status}（${candidate}）`);continue;}
         return await response.json();
-      }catch(error){
-        lastError=error;
-      }
+      }catch(error){lastError=error;}
     }
-    throw lastError||new Error(`${label}加载失败`);
+    const detail=lastError?.message?`；最后错误：${lastError.message}`:"";
+    throw new Error(`${label}加载失败。已尝试：${attempted.join("、")||path}${detail}`);
   }
   function loadLibraryManifest(){
-    if(libraryManifestCache) return Promise.resolve(libraryManifestCache);
-    if(libraryManifestPromise) return libraryManifestPromise;
+    if(libraryManifestCache)return Promise.resolve(libraryManifestCache);
+    if(libraryManifestPromise)return libraryManifestPromise;
     libraryManifestPromise=loadJSON("data/library_manifest.json","词库清单")
-      .then(data=>{
-        if(!data||!Array.isArray(data.libraries)) throw new Error("词库清单格式不正确");
-        libraryManifestCache=data;return data;
-      })
+      .then(data=>{if(!data||!Array.isArray(data.libraries))throw new Error("词库清单格式不正确");libraryManifestCache=data;return data;})
       .catch(error=>{console.warn("Using fallback library manifest",error);libraryManifestCache=FALLBACK_LIBRARY_MANIFEST;return FALLBACK_LIBRARY_MANIFEST;})
       .finally(()=>{libraryManifestPromise=null;});
     return libraryManifestPromise;
   }
-  function loadCet6Cards(){
-    if(!cet6CardsPromise)cet6CardsPromise=loadJSON("data/cet6/cet6_cards_100.json","CET-6 学习卡")
-      .then(data=>{if(!Array.isArray(data.cards)||data.cards.length!==100)throw new Error("CET-6 学习卡数量或格式不正确");return data;})
-      .catch(error=>{cet6CardsPromise=null;throw error;});
-    return cet6CardsPromise;
+  function loadLibraryCards(id){
+    const config=LIBRARY_CONFIGS[id];
+    if(!config)return Promise.reject(new Error("该词库没有可加载的学习卡"));
+    if(!cardsPromises[id])cardsPromises[id]=loadJSON(config.cardsPath,config.cardsLabel)
+      .then(data=>{if(!Array.isArray(data.cards)||data.cards.length!==config.cardCount)throw new Error(`${config.cardsLabel}数量或格式不正确`);return data;})
+      .catch(error=>{cardsPromises[id]=null;throw error;});
+    return cardsPromises[id];
   }
-  function loadCet6Lexicon(){
-    if(!cet6LexiconPromise)cet6LexiconPromise=loadJSON("data/cet6/cet6_lexicon.json","CET-6 基础词库")
-      .then(data=>{if(!Array.isArray(data.entries)||!data.entries.length)throw new Error("CET-6 基础词库格式不正确");return data;})
-      .catch(error=>{cet6LexiconPromise=null;throw error;});
-    return cet6LexiconPromise;
+  function loadLibraryLexicon(id){
+    const config=LIBRARY_CONFIGS[id];
+    if(!config)return Promise.reject(new Error("该词库没有基础词典"));
+    if(!lexiconPromises[id])lexiconPromises[id]=loadJSON(config.lexiconPath,config.lexiconLabel)
+      .then(data=>{if(!Array.isArray(data.entries)||!data.entries.length)throw new Error(`${config.lexiconLabel}格式不正确`);return data;})
+      .catch(error=>{lexiconPromises[id]=null;throw error;});
+    return lexiconPromises[id];
   }
 
-  function statusText(status){
-    if(status === "ready") return "可学习";
-    if(status === "building") return "建设中";
-    return "规划中";
-  }
-  function statusClass(status){ return status === "ready" ? "green" : status === "building" ? "amber" : ""; }
+  function statusText(status){if(status==="ready")return "可学习";if(status==="building")return "建设中";return "规划中";}
+  function statusClass(status){return status==="ready"?"green":status==="building"?"amber":"";}
   function countText(item){
     const base=Number.isFinite(item.baseEntryCount)?`${item.baseEntryCount} 基础词条`:"基础词条待整理";
     const cards=Number.isFinite(item.cardCount)?`${item.cardCount} 学习卡`:"学习卡待生成";
@@ -125,9 +154,9 @@
   }
 
   function librariesPage(){
-    render(shell(`<section class="library-hero card"><div><span class="hero-badge">WORDLOOP v4.1</span><h3>完整基础词库已经接入，首批高质量学习卡可以直接练习。</h3><p>CET-6 基础层收录 ECDICT 中全部 5407 个 cet6 标签词条；学习层先发布 100 张经过结构化生成和自动校验的增强卡。两个层次分开维护，既能浏览完整词典，又不会把未经审核的内容直接变成练习题。</p><div class="hero-actions"><a class="btn btn-primary" href="#/library/cet6">进入 CET-6</a><a class="btn btn-secondary" href="#/library/core-200">核心 200</a></div></div><div class="library-pipeline-mini"><span>5407 基础词条</span><i>→</i><span>词义与音标</span><i>→</i><span>100 增强卡</span><i>→</i><span>规则质检</span></div></section>
+    render(shell(`<section class="library-hero card"><div><span class="hero-badge">WORDLOOP v4.2</span><h3>六级与考研词库已经接入，可分别建立独立学习计划。</h3><p>CET-6 提供 5407 个基础词条和 100 张增强卡；考研英语首发 4112 个核心基础词条和 100 张原创增强卡，重点覆盖熟词僻义、学术论证与逻辑关系。基础词典与学习卡分层维护，未经整理的释义不会直接变成练习题。</p><div class="hero-actions"><a class="btn btn-primary" href="#/library/kaoyan">进入考研英语</a><a class="btn btn-secondary" href="#/library/cet6">进入 CET-6</a><a class="btn btn-ghost" href="#/library/core-200">核心 200</a></div></div><div class="library-pipeline-mini"><span>基础词典</span><i>→</i><span>词义筛选</span><i>→</i><span>原创语境卡</span><i>→</i><span>规则质检</span></div></section>
       <section class="section"><div class="section-head"><div><h3>词库目录</h3><p class="meta">不同词库分别保存学习计划，切换后不会混入其他词库。</p></div></div><div id="libraryGrid" class="library-grid"><div class="card empty">正在加载词库清单……</div></div></section>
-      <section class="section"><div class="card lexicon-note"><div><h3>“完整词库”与“学习卡”有什么区别？</h3><p>完整基础词库用于查词、筛选和后续生成；只有经过例句、翻译、搭配及填空校验的内容才进入学习计划。当前 CET-6 已有 100 张可直接学习的增强卡。</p></div><a class="btn btn-secondary" href="#/library/cet6/lexicon">浏览 5407 词条</a></div></section>`,"词库中心",`当前：${LIBRARY_NAMES[activeLibraryId()]||activeLibraryId()}`));
+      <section class="section"><div class="card lexicon-note"><div><h3>基础词库与增强学习卡</h3><p>基础词库用于查词、筛选和后续生成；只有经过词义选择、例句翻译、搭配整理及填空校验的内容才进入学习计划。当前两个考试词库各有 100 张增强卡。</p></div><div class="actions"><a class="btn btn-secondary" href="#/library/kaoyan/lexicon">浏览考研 4112</a><a class="btn btn-secondary" href="#/library/cet6/lexicon">浏览六级 5407</a></div></div></section>`,"词库中心",`当前：${LIBRARY_NAMES[activeLibraryId()]||activeLibraryId()}`));
     loadLibraryManifest().then(manifest=>{
       if((location.hash||"").split("?")[0]!=="#/libraries")return;
       const grid=document.getElementById("libraryGrid");if(grid)grid.innerHTML=manifest.libraries.map(renderLibraryCard).join("");
@@ -140,7 +169,11 @@
     const due=cards.filter(c=>getReview(c.id).status!=="new"&&new Date(getReview(c.id).dueAt)<=new Date()).length;
     return {cards:cards.length,mastered,due};
   }
-
+  function releaseInfo(item){
+    const config=LIBRARY_CONFIGS[item.id];
+    if(!config)return "";
+    return `<section class="section"><div class="card pipeline-card"><div class="section-head"><div><h3>${escapeHtml(config.releaseTitle)}</h3><p class="meta">基础层与学习层分开，防止未经整理的词典内容直接进入练习。</p></div></div><div class="release-grid"><div><strong>${config.baseCount}</strong><span>${escapeHtml(config.releaseBaseText)}</span></div><div><strong>${config.cardCount}</strong><span>原创增强学习卡</span></div><div><strong>100%</strong><span>答案位置与字段规则校验</span></div></div><ul class="release-list"><li>每张增强卡包含英文语境、中文翻译、考点用法、常见搭配、近义区别、词族和扩展例句。</li><li>填空答案在英文句中仅出现一次，并能由前缀、答案和后缀完整还原。</li><li>${escapeHtml(config.scopeText)}</li></ul></div></section>`;
+  }
   function libraryDetail(id){
     render(shell(`<div class="card empty">正在加载词库信息……</div>`,"词库详情","来源、内容与学习入口"));
     loadLibraryManifest().then(manifest=>{
@@ -150,38 +183,40 @@
       const active=activeLibraryId()===item.id;
       const stats=activeLibraryStats(item.id);
       const ready=item.status==="ready";
+      const config=LIBRARY_CONFIGS[item.id];
       let actions="";
       if(ready){
         actions+=active?`<a class="btn btn-primary" href="#/plan">进入学习计划</a>`:`<button class="btn btn-primary" onclick="activateLibrary('${escapeHtml(item.id)}')">启用这个词库</button>`;
-        if(item.id==="cet6")actions+=`<a class="btn btn-secondary" href="#/library/cet6/lexicon">浏览 5407 基础词条</a>`;
+        if(config)actions+=`<a class="btn btn-secondary" href="#/library/${escapeHtml(item.id)}/lexicon">浏览 ${config.baseCount} 基础词条</a>`;
         actions+=`<a class="btn btn-secondary" href="#/cards">查看已加载卡片</a>`;
       }else actions=`<a class="btn btn-primary" href="#/libraries">返回词库目录</a>`;
       const baseCount=Number.isFinite(item.baseEntryCount)?item.baseEntryCount:"—";
       const cardCount=Number.isFinite(item.cardCount)?item.cardCount:"—";
       const statsHtml=ready?`<div class="grid grid-4 section"><div class="card stat"><div class="label">基础词条</div><div class="value">${baseCount}</div></div><div class="card stat"><div class="label">增强学习卡</div><div class="value">${cardCount}</div></div><div class="card stat"><div class="label">已加载到本机</div><div class="value">${stats.cards}</div></div><div class="card stat"><div class="label">当前状态</div><div class="value stat-word">${active?"正在学习":"可切换"}</div></div></div>`:"";
-      const cet6Info=item.id==="cet6"?`<section class="section"><div class="card pipeline-card"><div class="section-head"><div><h3>CET-6 本次发布</h3><p class="meta">基础层与学习层分开，防止低质量例句直接进入练习。</p></div></div><div class="release-grid"><div><strong>5407</strong><span>ECDICT cet6 标签全量词条</span></div><div><strong>100</strong><span>原创增强学习卡</span></div><div><strong>100%</strong><span>答案位置与字段规则校验</span></div></div><ul class="release-list"><li>每张增强卡包含英文语境、准确中文翻译、用法提醒、常见搭配、相关表达、词族和扩展例句。</li><li>填空答案必须在英文句中恰好出现一次，并可完整还原原句。</li><li>5407 是 ECDICT 数据中带 <code>cet6</code> 标签的全量结果，不宣称为唯一或官方六级大纲词数。</li></ul></div></section>`:"";
-      render(shell(`<a class="back-link" href="#/libraries">← 返回词库中心</a><section class="library-detail-hero card accent-${escapeHtml(item.accent||"violet")}"><div><div class="library-detail-title"><span class="badge ${statusClass(item.status)}">${statusText(item.status)}</span>${active?`<span class="badge">当前词库</span>`:""}</div><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.description||"")}</p><div class="hero-actions">${actions}</div></div><div class="library-detail-count"><strong>${cardCount}</strong><span>增强学习卡</span></div></section>${statsHtml}<section class="section grid grid-2"><div class="card form-card"><h3>数据来源</h3><p class="meta">${escapeHtml(item.source||"未填写")}</p><h3>许可与范围</h3><p class="meta">${escapeHtml(item.licenseNote||"")}</p></div><div class="card form-card"><h3>学习能力</h3><div class="library-feature-list">${(item.features||[]).map(x=>`<span>✓ ${escapeHtml(x)}</span>`).join("")}</div></div></section>${cet6Info}`,item.shortName||item.name,item.level||"词库详情"));
+      render(shell(`<a class="back-link" href="#/libraries">← 返回词库中心</a><section class="library-detail-hero card accent-${escapeHtml(item.accent||"violet")}"><div><div class="library-detail-title"><span class="badge ${statusClass(item.status)}">${statusText(item.status)}</span>${active?`<span class="badge">当前词库</span>`:""}</div><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.description||"")}</p><div class="hero-actions">${actions}</div></div><div class="library-detail-count"><strong>${cardCount}</strong><span>增强学习卡</span></div></section>${statsHtml}<section class="section grid grid-2"><div class="card form-card"><h3>数据来源</h3><p class="meta">${escapeHtml(item.source||"未填写")}</p><h3>许可与范围</h3><p class="meta">${escapeHtml(item.licenseNote||"")}</p></div><div class="card form-card"><h3>学习能力</h3><div class="library-feature-list">${(item.features||[]).map(x=>`<span>✓ ${escapeHtml(x)}</span>`).join("")}</div></div></section>${releaseInfo(item)}`,item.shortName||item.name,item.level||"词库详情"));
     });
   }
 
   function ensureDeckForLibrary(id,name){
     let deck=state.decks.find(d=>d.libraryId===id&&d.name===name);
-    if(!deck){deck={id:uid(),libraryId:id,name,description:`${name} · WordLoop v4.1`,color:"#3b82f6",createdAt:nowISO(),updatedAt:nowISO()};state.decks.push(deck);}
+    if(!deck){deck={id:uid(),libraryId:id,name,description:`${name} · WordLoop v4.2`,color:LIBRARY_CONFIGS[id]?.color||"#6d5dfc",createdAt:nowISO(),updatedAt:nowISO()};state.decks.push(deck);}
     return deck;
   }
   function initialReview(cardId,index){return {cardId,status:"new",level:0,intervalDays:0,consecutiveCorrect:0,totalCorrect:0,totalWrong:0,lapses:0,dueAt:index<10?nowISO():addDays(new Date(),1+Math.floor(index/20)),lastReviewedAt:null,averageResponseTime:0};}
-  async function importCet6Cards(){
-    const payload=await loadCet6Cards();
-    const deck=ensureDeckForLibrary("cet6",payload.name||"CET-6 精选 100");
+  async function importLibraryCards(id){
+    const payload=await loadLibraryCards(id);
+    const deck=ensureDeckForLibrary(id,payload.name||libraryPlanName(id));
     const existingById=new Map(state.cards.map(c=>[c.id,c]));
+    const reviewIds=new Set(state.reviewStates.map(r=>r.cardId));
     payload.cards.forEach((source,index)=>{
       const existing=existingById.get(source.id);
       if(existing){
         const preserved={createdAt:existing.createdAt||nowISO(),updatedAt:nowISO(),isSuspended:!!existing.isSuspended};
-        Object.assign(existing,clone(source),preserved,{deckId:deck.id,libraryId:"cet6"});
+        Object.assign(existing,clone(source),preserved,{deckId:deck.id,libraryId:id});
       }else{
-        const card={...clone(source),deckId:deck.id,libraryId:"cet6",createdAt:nowISO(),updatedAt:nowISO()};
-        state.cards.push(card);state.reviewStates.push(initialReview(card.id,index));
+        const card={...clone(source),deckId:deck.id,libraryId:id,createdAt:nowISO(),updatedAt:nowISO()};
+        state.cards.push(card);
+        if(!reviewIds.has(card.id)){state.reviewStates.push(initialReview(card.id,index));reviewIds.add(card.id);}
       }
     });
     save();
@@ -189,29 +224,28 @@
   }
 
   window.activateLibrary=async function(id){
-    const valid=["core-200","cet6"];
+    const valid=["core-200",...Object.keys(LIBRARY_CONFIGS)];
     if(!valid.includes(id)){toast("该词库还在规划中");return;}
     const button=document.activeElement;if(button?.tagName==="BUTTON"){button.disabled=true;button.textContent="正在准备词库……";}
     try{
-      if(id==="cet6")await importCet6Cards();
+      if(LIBRARY_CONFIGS[id])await importLibraryCards(id);
       const current=activeLibraryId();
       if(state.studyPlan)state.libraryPlans[current]=state.studyPlan;
       state.libraryCenter.activeLibraryId=id;
-      if(state.libraryPlans[id]){
-        state.studyPlan=state.libraryPlans[id];
-        ensureStudyPlan();
-      }else{
-        createPlanAssignments(state.settings.dailyGoal||20,"original",false);
-        state.studyPlan.name=libraryPlanName(id);
-        state.libraryPlans[id]=state.studyPlan;
-      }
+      if(state.libraryPlans[id]){state.studyPlan=state.libraryPlans[id];ensureStudyPlan();}
+      else{createPlanAssignments(state.settings.dailyGoal||20,"original",false);state.studyPlan.name=libraryPlanName(id);state.libraryPlans[id]=state.studyPlan;}
       state.libraryCenter.updatedAt=nowISO();
-      practiceSession=null;save();toast(`已切换到${LIBRARY_NAMES[id]}`);location.hash="#/plan";
-    }catch(error){console.error(error);alert(`词库启用失败：${error.message}\n请确认 data/cet6 文件已完整上传。`);if(button?.tagName==="BUTTON")button.disabled=false;}
+      practiceSession=null;save();toast(`已切换到${LIBRARY_NAMES[id]||id}`);location.hash="#/plan";
+    }catch(error){
+      console.error(error);
+      const path=LIBRARY_CONFIGS[id]?.cardsPath||`data/${id}`;
+      alert(`词库启用失败：${error.message}\n请确认 ${path} 已完整上传。`);
+      if(button?.tagName==="BUTTON")button.disabled=false;
+    }
   };
 
   const planEligibleCardsV4Base=planEligibleCards;
-  planEligibleCards=function(){ return state.cards.filter(c=>!c.isSuspended&&cardLibraryId(c)===activeLibraryId()); };
+  planEligibleCards=function(){return state.cards.filter(c=>!c.isSuspended&&cardLibraryId(c)===activeLibraryId());};
 
   const buildPracticeQueueV4Base=buildPracticeQueue;
   buildPracticeQueue=function(mode){
@@ -232,7 +266,6 @@
     state.libraryPlans[activeLibraryId()]=state.studyPlan;
     save();
   };
-
   const ensureStudyPlanV4Base=ensureStudyPlan;
   ensureStudyPlan=function(){
     ensureStudyPlanV4Base();
@@ -265,12 +298,16 @@
     host.innerHTML=`<div class="lexicon-result-meta"><span>找到 ${filtered.length} 个词条 · 第 ${lexiconView.page}/${totalPages} 页</span><span>${escapeHtml(data.scopeNote||"")}</span></div><div class="card lexicon-table">${page.length?page.map(entry=>`<div class="lexicon-row"><div class="lexicon-word"><strong>${escapeHtml(entry.word)}</strong><span>${escapeHtml(entry.phonetic||"")}</span></div><div><span class="lexicon-pos">${escapeHtml((entry.partsOfSpeech||[]).join(" / ")||"词性未标注")}</span><p>${escapeHtml(primaryMeaning(entry)||"暂无中文释义")}</p></div><div class="lexicon-frequency">${escapeHtml(frequencyText(entry))}</div></div>`).join(""):`<div class="empty">没有匹配的词条。</div>`}</div><div class="lexicon-pagination"><button class="btn btn-secondary" ${lexiconView.page<=1?"disabled":""} onclick="changeLexiconPage(-1)">← 上一页</button><span>${lexiconView.page} / ${totalPages}</span><button class="btn btn-secondary" ${lexiconView.page>=totalPages?"disabled":""} onclick="changeLexiconPage(1)">下一页 →</button></div>`;
     host.dataset.totalPages=String(totalPages);
   }
-  window.searchCet6Lexicon=function(value){lexiconView.query=value||"";lexiconView.page=1;loadCet6Lexicon().then(renderLexiconRows);};
-  window.changeLexiconPage=function(delta){lexiconView.page+=Number(delta)||0;loadCet6Lexicon().then(data=>{renderLexiconRows(data);document.querySelector(".lexicon-browser")?.scrollIntoView({behavior:"smooth",block:"start"});});};
+  window.searchLexicon=function(value){lexiconView.query=value||"";lexiconView.page=1;loadLibraryLexicon(lexiconView.libraryId).then(renderLexiconRows);};
+  window.searchCet6Lexicon=window.searchLexicon;
+  window.changeLexiconPage=function(delta){lexiconView.page+=Number(delta)||0;loadLibraryLexicon(lexiconView.libraryId).then(data=>{renderLexiconRows(data);document.querySelector(".lexicon-browser")?.scrollIntoView({behavior:"smooth",block:"start"});});};
 
-  function cet6LexiconPage(){
-    render(shell(`<a class="back-link" href="#/library/cet6">← 返回 CET-6 词库</a><section class="card lexicon-browser"><div class="section-head"><div><span class="hero-badge">BASE LEXICON</span><h3>CET-6 基础词库浏览器</h3><p class="meta">ECDICT 中带 cet6 标签的 5407 个词条，包含音标、中英文释义、考试标签、词频和词形信息。</p></div><button class="btn btn-primary" onclick="activateLibrary('cet6')">启用精选 100 学习卡</button></div><div class="toolbar"><input class="input search" type="search" placeholder="搜索英文单词或中文释义" value="${escapeHtml(lexiconView.query)}" oninput="searchCet6Lexicon(this.value)"><select class="select lexicon-page-size" onchange="lexiconView.pageSize=Number(this.value);lexiconView.page=1;searchCet6Lexicon(document.querySelector('.lexicon-browser .search').value)"><option value="25">每页 25</option><option value="50" selected>每页 50</option><option value="100">每页 100</option></select></div><div id="lexiconResults"><div class="card empty">正在加载 5407 个基础词条……</div></div></section>`,"CET-6 基础词库","查词、筛选与后续学习卡生成的数据基础"));
-    loadCet6Lexicon().then(data=>{if((location.hash||"").split("?")[0]==="#/library/cet6/lexicon")renderLexiconRows(data);}).catch(error=>{const host=document.getElementById("lexiconResults");if(host)host.innerHTML=`<div class="card empty"><h3>基础词库加载失败</h3><p>${escapeHtml(error.message)}</p><p>请确认 <code>public/data/cet6/cet6_lexicon.json</code> 已上传。</p></div>`;});
+  function lexiconBrowserPage(id){
+    const config=LIBRARY_CONFIGS[id];
+    if(!config){libraryDetail(id);return;}
+    lexiconView.libraryId=id;lexiconView.query="";lexiconView.page=1;
+    render(shell(`<a class="back-link" href="#/library/${escapeHtml(id)}">← 返回 ${escapeHtml(config.shortName)} 词库</a><section class="card lexicon-browser"><div class="section-head"><div><span class="hero-badge">BASE LEXICON</span><h3>${escapeHtml(config.browserTitle)}</h3><p class="meta">${escapeHtml(config.browserDescription)}</p></div><button class="btn btn-primary" onclick="activateLibrary('${escapeHtml(id)}')">启用精选 100 学习卡</button></div><div class="toolbar"><input class="input search" type="search" placeholder="搜索英文单词或中文释义" value="" oninput="searchLexicon(this.value)"><select class="select lexicon-page-size" onchange="lexiconView.pageSize=Number(this.value);lexiconView.page=1;searchLexicon(document.querySelector('.lexicon-browser .search').value)"><option value="25">每页 25</option><option value="50" selected>每页 50</option><option value="100">每页 100</option></select></div><div id="lexiconResults"><div class="card empty">正在加载 ${config.baseCount} 个基础词条……</div></div></section>`,`${config.shortName} 基础词库`,"查词、筛选与后续学习卡生成的数据基础"));
+    loadLibraryLexicon(id).then(data=>{if((location.hash||"").split("?")[0]===`#/library/${id}/lexicon`)renderLexiconRows(data);}).catch(error=>{const host=document.getElementById("lexiconResults");if(host)host.innerHTML=`<div class="card empty"><h3>基础词库加载失败</h3><p>${escapeHtml(error.message)}</p><p>请确认 <code>public/${escapeHtml(config.lexiconPath)}</code> 已上传。</p></div>`;});
   }
 
   const shellV4Base=shell;
@@ -290,7 +327,7 @@
     ensureLibraryState();
     const path=(location.hash||"#/dashboard").slice(1).split("?")[0];
     if(path==="/libraries")librariesPage();
-    else if(path==="/library/cet6/lexicon")cet6LexiconPage();
+    else if(/^\/library\/(cet6|kaoyan)\/lexicon$/i.test(path))lexiconBrowserPage(path.split("/")[2]);
     else if(/^\/library\/[a-z0-9-]+$/i.test(path))libraryDetail(path.split("/").pop());
     else routeV4Base();
   };
