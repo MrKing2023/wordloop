@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "productVersion": "4.1.0",
+  "updatedAt": "2026-07-12",
+  "libraries": [
+    {
+      "id": "core-200",
+      "name": "WordLoop 核心 200 词",
+      "shortName": "核心 200",
+      "status": "ready",
+      "baseEntryCount": 200,
+      "cardCount": 200,
+      "level": "基础—进阶",
+      "description": "原有 200 张学习卡，包含填空、整句翻译、发音、音标、搭配和拓展例句。",
+      "source": "WordLoop 自建学习卡",
+      "licenseNote": "项目自建内容；与考试基础词典分层管理。",
+      "features": ["句子填空", "整句翻译", "逐级提示", "详细解析"],
+      "accent": "violet"
+    },
+    {
+      "id": "cet6",
+      "name": "CET-6 基础词库与精选学习卡",
+      "shortName": "CET-6",
+      "status": "ready",
+      "baseEntryCount": 5407,
+      "cardCount": 100,
+      "level": "大学英语六级",
+      "description": "已完成 ECDICT 中 cet6 标签的全量基础词库，并发布首批 100 张高质量增强学习卡。",
+      "source": "ECDICT 基础字段 + WordLoop 原创学习内容",
+      "licenseNote": "ECDICT 使用 MIT License；5407 为其 cet6 标签全量结果，不宣称为唯一或官方考试词表。",
+      "features": ["5407 基础词条", "100 张增强卡", "音标与释义", "搭配与例句"],
+      "accent": "blue"
+    },
+    {
+      "id": "kaoyan",
+      "name": "考研英语词库",
+      "shortName": "考研英语",
+      "status": "planned",
+      "baseEntryCount": null,
+      "cardCount": null,
+      "level": "考研英语",
+      "description": "突出熟词僻义、抽象论述、阅读高频搭配和长难句语境。",
+      "source": "考试标签词表 + 词典基础数据 + WordLoop 原创学习内容",
+      "licenseNote": "词表来源、释义来源和生成内容分别记录。",
+      "features": ["熟词僻义", "长难句语境", "阅读搭配", "整句输出"],
+      "accent": "amber"
+    },
+    {
+      "id": "ielts",
+      "name": "IELTS 主题词汇",
+      "shortName": "IELTS",
+      "status": "planned",
+      "baseEntryCount": null,
+      "cardCount": null,
+      "level": "IELTS",
+      "description": "按写作、听力场景、口语主题、核心词汇和同义改写分组，不宣称官方完整词表。",
+      "source": "开放词典 + 主题语料 + WordLoop 原创学习内容",
+      "licenseNote": "强调 collocation 与 paraphrase，来源和生成版本可追溯。",
+      "features": ["主题分类", "常见搭配", "同义改写", "写作表达"],
+      "accent": "green"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "exams": {
+    "cet6": {
+      "sourceTag": "cet6",
+      "name": "大学英语六级",
+      "sort": [
+        "frq",
+        "bnc",
+        "word"
+      ]
+    },
+    "kaoyan": {
+      "sourceTag": "ky",
+      "aliases": [
+        "kaoyan"
+      ],
+      "name": "考研英语",
+      "sort": [
+        "frq",
+        "bnc",
+        "word"
+      ]
+    },
+    "ielts": {
+      "sourceTag": "ielts",
+      "name": "IELTS 核心候选词",
+      "sort": [
+        "frq",
+        "bnc",
+        "word"
+      ]
+    }
+  }
+}

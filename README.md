@@ -1,38 +1,23 @@
-# WordLoop v3.4：AI 辅助语境背单词
+# WordLoop v4.1.1：CET-6 基础词库与精选学习卡
 
-一个纯静态、可部署到 GitHub + Cloudflare Workers Static Assets 的本地英语学习网站。
+WordLoop 是一个以主动输入、语境记忆、逐级提示和间隔复习为核心的纯静态英语学习网站。可部署到 CloudBase、Cloudflare Workers Static Assets、GitHub Pages 或其他静态托管平台。
 
-## v3 新功能
+v4.1.1 为部署兼容修复版：CET-6 数据优先从 `data/cet6/` 读取，并在平台未保留子目录时尝试根目录同名备用文件；静态资源增加版本参数以避免旧缓存。
 
-- 将全部词库固定划分为 M 天，每天 N 个词；
-- 默认 200 个词、每天 20 个，共 10 天；
-- 可调整每天词数，自动重新计算总天数；
-- 可以自由选择任意一天学习；
-- 每天独立记录已学数量、正确、错词和继续位置；
-- 支持继续本日学习、从头重学、只练本日错词；
-- 支持手动标记本日完成、取消完成、重置本日进度；
-- 按天学习与原有间隔复习并存；
-- 中文题目与英文填空句采用接近的字号和视觉权重；
-- 首页、学习计划、日期详情和练习页重新设计；
-- 逐级提示：发音 → 音标 → 答案；
-- 答题后显示详细释义、用法、搭配、相近表达和更多例句；
-- 内置 200 张卡片。
+## v4.1 已完成
 
-## 本地运行
+- 接入 **CET-6 基础词库 5407 条**：这是 ECDICT 中带 `cet6` 标签词条的全量提取；
+- 发布 **CET-6 精选 100 张增强学习卡**；
+- 每张增强卡包含英文语境、中文翻译、音标、词性、释义、用法提醒、搭配、相关表达、词族和扩展例句；
+- 新增 CET-6 基础词库浏览器，支持英文或中文释义搜索和分页；
+- 支持在“核心 200”和“CET-6 精选 100”之间切换；
+- 不同词库分别保存按天学习计划，不会把两个词库混在同一计划中；
+- 保留原有 200 张卡片、错词复习、发音、逐级提示、详细解析和上一题/下一题功能；
+- 加入数据来源、范围说明和第三方许可文件。
 
-### 直接打开
+> 5407 指 ECDICT 数据中带 `cet6` 标签的全部词条，不代表唯一或官方六级考试大纲词数。
 
-双击 `public/index.html`。部分手机浏览器对本地 HTML 的存储和发音支持有限。
-
-### 推荐：本地服务器
-
-Windows 双击：
-
-```text
-start_wordloop.bat
-```
-
-或在当前目录运行：
+## 运行
 
 ```bash
 python -m http.server 8000 --directory public
@@ -44,59 +29,70 @@ python -m http.server 8000 --directory public
 http://localhost:8000
 ```
 
-## 数据保存
+## 使用 CET-6 词库
 
-数据保存在当前网站域名下的浏览器 localStorage 中：
+1. 打开“词库中心”；
+2. 进入“CET-6”；
+3. 点击“启用这个词库”；
+4. 网站加载 100 张增强学习卡，并自动建立 5 天计划（默认每天 20 个）；
+5. “浏览 5407 基础词条”仅用于查词和后续内容生成，不会把全部基础词条直接变成未经审核的练习题。
 
-- 关闭并重新打开网页后仍会保留；
-- 同一网址、同一设备、同一浏览器可继续学习；
-- 换设备或换浏览器不会自动同步；
-- 清除浏览器数据可能导致记录丢失；
-- 建议定期在“导入导出”页面导出 JSON。
+## 主要数据文件
+
+```text
+public/data/cet6/cet6_lexicon.json
+public/data/cet6/cet6_cards_100.json
+public/data/library_manifest.json
+```
+
+- `cet6_lexicon.json`：5407 条基础词典数据；
+- `cet6_cards_100.json`：100 张可直接学习的增强卡；
+- `library_manifest.json`：词库目录、状态、来源和数量。
+
+## 词库生成工具
+
+```text
+tools/lexicon_builder/
+```
+
+其中 `build_cet6_v4_1.py` 可以从提取后的 ECDICT CET-6 数据重新构建本次发布文件。原始 ECDICT CSV 不提交到仓库。
+
+## 本地数据
+
+当前学习进度仍保存在当前域名下的浏览器 `localStorage`：
+
+- 同一域名、设备和浏览器可以继续学习；
+- Cloudflare 与 CloudBase 地址的数据彼此独立；
+- 清理浏览器数据会导致记录丢失；
+- 建议定期从“导入导出”页面备份 JSON。
+
+大型词库原始数据采用静态 JSON 按需读取，只有启用的学习卡写入本地学习状态。后续将迁移到 IndexedDB，并增加 CloudBase 云同步。
 
 ## 部署
 
-项目不需要前端构建。Cloudflare Workers Static Assets 只会发布 `public/` 中的网站文件：
+### CloudBase
 
-- Build command：`exit 0`
-- Deploy command：`npx wrangler deploy`
-- Root directory：`/`
+把 `public/` 内所有文件和子目录作为静态网站根目录上传，必须保留：
 
-更详细步骤见 `DEPLOY_GITHUB_CLOUDFLARE.md`。
+```text
+data/cet6/cet6_lexicon.json
+data/cet6/cet6_cards_100.json
+```
 
-## 主要文件
+### Cloudflare Workers Static Assets
 
-- `public/index.html`：入口页面
-- `public/styles.css`：基础样式和 v3 响应式设计
-- `public/app.js`：基础功能
-- `public/enhancements.js`：200 词库、逐级提示和详细解析
-- `public/plan_v3.js`：按天学习计划、日期进度与 v3 页面
-- `public/word_bank_200.json`：独立的 200 词库数据
-- `WordLoop_standalone_v3.4.html`：不参与线上部署的单文件版本
+仓库根目录的 `wrangler.jsonc` 已指向：
 
-## 部署后更新
+```json
+{"assets":{"directory":"./public"}}
+```
 
-修改代码并推送到 GitHub 后，Cloudflare 会自动重新部署。网页更新一般不会删除同一域名下的本地学习进度。
+GitHub `main` 分支更新后，已连接的 Cloudflare 项目会自动重新部署。
 
+## 文档
 
-## v3.1 关键修复
-
-已修复点击“学习计划”“第 N 天”“继续学习”后网址改变但页面仍停留首页的问题。请使用本压缩包中的新文件，不要继续使用旧的 `WordLoop_standalone_v3.html`。
-
-
-## v3.2 快捷切题
-
-答题完成后，宽屏桌面浏览器右侧会显示固定的“下一题”按钮。页面底部按钮仍然保留。窄屏设备不会显示侧边按钮。
-
-
-## v3.3 导航改进
-
-- 左侧菜单可收起和展开。
-- 答题后可用左侧“上一题”和右侧“下一题”快速浏览。
-- 底部导航按钮继续保留。
-- 后续功能规划见 `ROADMAP.md`。
-
-
-## v3.4 侧栏与快捷导航
-
-展开侧栏时按钮不再遮挡 Logo；收起后只显示 W Logo，悬停后变为展开侧栏图标。宽屏解析页的上一题、下一题按钮改为横向显示。
+- `ROADMAP.md`：后续产品计划；
+- `CHANGELOG_v4.1.md`：版本变更；
+- `TEST_REPORT_v4.1.md`：数据与功能检查；
+- `THIRD_PARTY_NOTICES.md`：ECDICT 来源与许可；
+- `docs/AI_CONTENT_PIPELINE.md`：后续大规模高质量内容生成流程。
