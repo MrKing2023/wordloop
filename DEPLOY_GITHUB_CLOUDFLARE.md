@@ -21,6 +21,8 @@ wordloop/
 
 Wrangler 只上传 `public/`，因此 `.git`、README、更新说明、测试报告和单文件离线版不会公开为网站资源。
 
+WordLoop 使用 `#/...` 哈希路由，不需要将未知路径回退到 `index.html`；不存在的仓库文件路径会直接返回 404。
+
 ## Cloudflare 构建设置
 
 ```text
